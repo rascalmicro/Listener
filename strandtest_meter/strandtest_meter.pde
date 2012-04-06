@@ -8,6 +8,9 @@
 // 320px by 4 px. 
 /*****************************************************************************/
 
+#define NORMAL 1
+#define INVERSE 0
+
 // Choose which 2 pins you will use for output.
 // Can be any valid output pins.
 int dataPin = 2;   
@@ -17,6 +20,10 @@ int sensorPin= A0;
 int meterVal = 0;
 int color = 0;
 int maxVal = 30;
+int primary = 16000;
+int complement = 1000;
+int mode = INVERSE;
+int flag = false;
 
 // Set the first variable to the NUMBER of pixels. 32 = 32 pixels in a row
 // The LED strips are 32 LEDs per meter but you can extend/cut the strip
@@ -38,22 +45,58 @@ void setup() {
 void loop() {
 
   int filtered;
+  int scaled;
+  int numPixels;
   
   int i;
   sensor = analogRead(sensorPin);  //this will be between 0 and 1023
   filtered = filter(sensor);
-  meterVal = map(filtered, 300, 500, 3, 64);
+  scaled = ((filtered - 300)/2) + 300;
+  meterVal = map(scaled, 300, 500, 3, 64);
+  numPixels = strip.numPixels();
   
-  for (i=0; i < strip.numPixels(); i++) {
-   
-      if(i < meterVal) {
-          strip.setPixelColor(i, strip.Color(127,0,0));
-      } else if(i == meterVal) {
-          strip.setPixelColor(i, strip.Color(0,0,127));
-      } else {
-          strip.setPixelColor(i, strip.Color(0,0,0));
-      }
+  for (i=0; i <= numPixels; i++) {
+    if (mode == NORMAL) { 
+        if(i < meterVal) {
+            strip.setPixelColor(i, primary);
+        } else if(i == meterVal) {
+            strip.setPixelColor(i, complement);
+        } else {
+            strip.setPixelColor(i, 0);
+        }
+    } else {
+        if(i < meterVal) {
+            strip.setPixelColor(numPixels - i, primary);
+        } else if(i == meterVal) {
+            strip.setPixelColor(numPixels - i, complement);
+        } else {
+            strip.setPixelColor(numPixels - i, 0);
+        }
+    }
   }
+  if(meterVal > 30) {
+       primary += 2000;
+       complement += 2000;
+  }
+  
+  if (mode == NORMAL){
+    if (meterVal > 60){
+      flag = true;
+    }
+    if (flag == true && meterVal < 60) {
+      flag = false;  
+      mode = INVERSE;
+    }
+  } else if( mode == INVERSE) {
+    if (meterVal > 60) {
+      flag = true;
+    }
+    if (flag == true && meterVal < 60) {
+      flag = false;  
+      mode = NORMAL;
+    }
+  }
+  
 //  delay(10);
   strip.show();
 }
