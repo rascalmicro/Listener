@@ -22,6 +22,7 @@ int color = 0;
 int maxVal = 30;
 int primary = 16000;
 int complement = 1000;
+int background = 1000;
 int mode = INVERSE;
 int flag = false;
 
@@ -60,7 +61,7 @@ void loop() {
         if(i < meterVal) {
             strip.setPixelColor(i, primary);
         } else if(i == meterVal) {
-            strip.setPixelColor(i, complement);
+            strip.setPixelColor(i, (complement -= 1));
         } else {
             strip.setPixelColor(i, 0);
         }
@@ -68,7 +69,7 @@ void loop() {
         if(i < meterVal) {
             strip.setPixelColor(numPixels - i, primary);
         } else if(i == meterVal) {
-            strip.setPixelColor(numPixels - i, complement);
+            strip.setPixelColor(numPixels - i, (complement -= 1));
         } else {
             strip.setPixelColor(numPixels - i, 0);
         }
@@ -77,6 +78,7 @@ void loop() {
   if(meterVal > 30) {
        primary += 2000;
        complement += 2000;
+       background -= 1000;
   }
   
   if (mode == NORMAL){
