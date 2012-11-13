@@ -50,13 +50,14 @@ void setup() {
 void loop() {
 
   int filtered;
-  int scaled;
+  int decayed;
   int numPixels;
   
   int i;
   sensor = analogRead(sensorPin);  //this will be between 0 and 1023
   filtered = filter(sensor);
-  meterVal = map(filtered, mic_low, mic_high, first_led, total_leds);
+  decayed = decay(filtered);
+  meterVal = map(decayed, mic_low, mic_high, first_led, total_leds);
   numPixels = strip.numPixels();
   
   for (i=0; i <= numPixels; i++) {
@@ -106,15 +107,13 @@ void loop() {
   strip.show();
 }
 
-int filter(int sensor)
+int decay(int sensor)
 {
   static float peak = 0;
   static float divisor = 1;
   static int cycle = 0;
-  static float last = 0;
-  float current;
-  float diff;
-  
+  float current = 0;
+
   cycle++;
   
   current = peak/divisor;
@@ -126,10 +125,20 @@ int filter(int sensor)
   } else if ((divisor < 1000) && !(cycle % 10)) {
     divisor = divisor * 1.04;
   }
-  diff = current - last;
+  
+  return current;
+
+}
+
+int filter(int sensor)
+{
+  static float last = 0;
+  float diff;
+  
+  diff = sensor - last;
   if ((diff > 25.0) || (diff < -5.0)) {
-    last = current;
-    return (int)current;
+    last = sensor;
+    return (int)sensor;
   } else {
     return (int)last;
   }
