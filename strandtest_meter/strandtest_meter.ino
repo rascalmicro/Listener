@@ -25,10 +25,14 @@ int complement = 1000;
 int background = 1000;
 int mode = INVERSE;
 int flag = false;
+int mic_high = 700;
+int mic_low = 300;
+int first_led = 3;
+int total_leds = 64;
 
 // Set the first variable to the NUMBER of pixels. 32 = 32 pixels in a row
 // The LED strips are 32 LEDs per meter but you can extend/cut the strip
-LPD8806 strip = LPD8806(64, dataPin, clockPin);
+LPD8806 strip = LPD8806(total_leds, dataPin, clockPin);
 
 // you can also use hardware SPI, for ultra fast writes by leaving out the
 // data and clock pin arguments. This will 'fix' the pins to the following:
@@ -52,8 +56,7 @@ void loop() {
   int i;
   sensor = analogRead(sensorPin);  //this will be between 0 and 1023
   filtered = filter(sensor);
-  scaled = ((filtered - 300)/2) + 300;
-  meterVal = map(scaled, 300, 500, 3, 64);
+  meterVal = map(filtered, mic_low, mic_high, first_led, total_leds);
   numPixels = strip.numPixels();
   
   for (i=0; i <= numPixels; i++) {
